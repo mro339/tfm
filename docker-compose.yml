@@ -1,39 +1,73 @@
+
 name: federated-learning
 
-services: #Lista de servicios que se van a levantar
-          #En este caso vamos a levantar un servidor y dos clientes
+services:
   server:
-    build: ./server #La ruta donde se encuentra el Dockerfile del servidor
-    container_name: fl-server #Nombre del contenedor del servidor
-    ports: #Mapeo de puertos para acceder al servidor desde el host. Es decir, publica el puerto 8080 del contender al puerto 8080 del host (afrition)
+    build: ./server
+    container_name: fl-server
+    ports:
       - "8080:8080"
-    networks: #Red donde se van a comunicar los contenedores. Conecta el contenedor del servidor a la red flnet
+    networks:
       - flnet
+    environment:
+      - TOTAL_CLIENTS=5 
+
 
   client1:
-    build: ./client #La ruta donde se encuentra el Dockerfile del cliente
-    container_name: fl-client1 #así se llama el contenedor del cliente 1
-    environment: #Variables de entorno para el contenedor del cliente 1
-      - CLIENT_ID=1
-    depends_on: #Indica que el contenedor del cliente 1 depende del contenedor del servidor, es decir, el servidor debe estar levantado antes que el cliente 1
-      - server
-    networks: #Red donde se van a comunicar los contenedores. Conecta el contenedor del cliente 1 a la red flnet
-      - flnet
-
-  client2: #Lo mismo para el cliente 2
     build: ./client
-    container_name: fl-client2
+    container_name: fl-client1
     environment:
-      - CLIENT_ID=2
+      - CLIENT_ID=1
+      - TOTAL_CLIENTS=5
     depends_on:
       - server
     networks:
       - flnet
 
-networks: #Definición de la red personalizada llamada flnet
-  flnet: #Nombre de la red
-    driver: bridge #Tipo de red, en este caso una red puente (bridge) que permite la comunicación entre los contenedores dentro de la misma red
-                   #DNS interno para resolver nombres de contenedores dentro de la red
+  client2:
+    build: ./client
+    container_name: fl-client2
+    environment:
+      - CLIENT_ID=2
+      - TOTAL_CLIENTS=5
+    depends_on:
+      - server
+    networks:
+      - flnet
 
-#Debtri del fl-cliente1, resolviendo server:8080 usas el DNS interno para llegar al servidor sin exponer IPs externo. Esto hace que la comunicación sea exactamente como "máquinas separadas" en la misma LAN virtual.
+  client3:
+    build: ./client
+    container_name: fl-client3
+    environment:
+      - CLIENT_ID=3
+      - TOTAL_CLIENTS=5
+    depends_on:
+      - server
+    networks:
+      - flnet
 
+  client4:
+    build: ./client
+    container_name: fl-client4
+    environment:
+      - CLIENT_ID=4
+      - TOTAL_CLIENTS=5
+    depends_on:
+      - server
+    networks:
+      - flnet
+
+  client5:
+    build: ./client
+    container_name: fl-client5
+    environment:
+      - CLIENT_ID=5
+      - TOTAL_CLIENTS=5
+    depends_on:
+      - server
+    networks:
+      - flnet
+
+networks:
+  flnet:
+    driver: bridge
