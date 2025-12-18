@@ -9,5 +9,3 @@ COPY server.py .
 #Copia el archivo server.py desde el host al directorio de trabajo del contenedor
 CMD ["python", "server.py"]
 #Define el comando por defecto para ejecutar el servidor cuando se inicie el contenedor
-
-#Este Dockerfile configura un entorno para ejecutar un servidor de aprendizaje federado utilizando Flower y TensorFlow. En resumen, establece una imagen base de Python, instala las dependencias necesarias, copia el archivo del servidor y define el comando para ejecutarlo.

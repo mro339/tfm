@@ -3,21 +3,25 @@ import os
 from typing import List, Tuple
 from flwr.common import Metrics
 
+"""
+**Servidor Flower** 
+1. Precisión del modelo.
+ 1.1 Recibimos la lista con pesos y métricas de cada cliente. En función al número del conjunto de datos.
+ 1.2 Obtenemos el número total de clientes. 
+2. Establecemos una estrategia.
+3. Inicializamos el servidor que escuche.
 
-#Definir la función de agregación de métricas
+"""
+
+#Calculamos como está funcionando el modelo, haciendo una media con todos los clientes y su conjunto de datos.
 def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
-    # Esta función recibe una lista de (num_ejemplos, métricas) de cada cliente
     accuracies = [num_examples * m["accuracy"] for num_examples, m in metrics]
     examples = [num_examples for num_examples, _ in metrics]
-
-    # Calcula la media ponderada (Weighted Average)
-    # Da más importancia a la nota de los clientes que tienen más datos
     return {"accuracy": sum(accuracies) / sum(examples)}
 
 #Aqui modificamos el código, para obtener el número total de clientes.
-total_clients = int(os.environ.get("TOTAL_CLIENTS", "2")) #Número total de clientes (debe coincidir con el número de instancias de cliente que se ejecutan)
+total_clients = int(os.environ.get("TOTAL_CLIENTS", "2"))
 min_clients = int(total_clients*0.6)
-
 if min_clients<1: min_clients=1
 
 strategy = fl.server.strategy.FedAvg( #Define la estrategia de agregación federada
@@ -31,18 +35,12 @@ strategy = fl.server.strategy.FedAvg( #Define la estrategia de agregación feder
 
 
 if __name__ == "__main__": # Punto de entrada del servidor. Si el archivo se ejecuta directamente, se inicia el servidor federado
-    print("🚀 Servidor federado iniciado...")
+    print("Servidor federado iniciado...")
 
-    fl.server.start_server( #inicia el servidor federado con la configuración especificada
+    fl.server.start_server( 
         server_address="0.0.0.0:8080", #Escucha en todas las interfaces de red en el puerto 8080
-        config=fl.server.ServerConfig(num_rounds=3), #Configura el servidor para ejecutar 3 rondas de entrenamiento federado
+        config=fl.server.ServerConfig(num_rounds=3), 
         strategy=strategy
     )
 
-#Flower se ha encargado de gestionar la comunicación entre el servidor y los clientes, así como de coordinar el proceso de entrenamiento federado.
-#Levanta un servidor gRCP (un servidor de comunicación) que escucha las conexiones entrantes de los clientes federados. en el puerto 8080
-#Espera a que los clientes se conecten y participen en el proceso de entrenamiento federado.
-#Por cada ronda de entrenamiento federado, el servidor coordina la selección de clientes, la distribución de los parámetros del modelo, la recopilación de las actualizaciones del modelo y la agregación de estas actualizaciones para mejorar el modelo global.
-#Envia instrucciones a los clientes para que realicen segun strategy
-#Gestiona la sincronización entre los clientes y el servidor para asegurar que todos los participantes estén alineados en cada ronda de entrenamiento.
-#Después de completar el número especificado de rondas, el servidor puede guardar el modelo final o realizar evaluaciones adicionales según sea necesario.
+
