@@ -83,7 +83,7 @@ import sys
 
 # Configuración
 # Puedes cambiar esto o pasarlo por argumento
-NUM_CLIENTS = 2
+NUM_CLIENTS = 3
 
 # Plantilla del encabezado y el servidor (que siempre es igual)
 yaml_content = f"""
@@ -99,6 +99,8 @@ services:
       - flnet
     environment:
       - TOTAL_CLIENTS={NUM_CLIENTS} 
+    volumes:
+      - ./results:/app/results
 
 """
 
@@ -115,6 +117,8 @@ for i in range(1, NUM_CLIENTS + 1):
       - server
     networks:
       - flnet
+    volumes:
+      - ./results:/app/results
 """
 
 # Añadir la red al final

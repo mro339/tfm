@@ -10,7 +10,9 @@ services:
     networks:
       - flnet
     environment:
-      - TOTAL_CLIENTS=2 
+      - TOTAL_CLIENTS=3 
+    volumes:
+      - ./results:/app/results
 
 
   client1:
@@ -18,22 +20,39 @@ services:
     container_name: fl-client1
     environment:
       - CLIENT_ID=1
-      - TOTAL_CLIENTS=2
+      - TOTAL_CLIENTS=3
     depends_on:
       - server
     networks:
       - flnet
+    volumes:
+      - ./results:/app/results
 
   client2:
     build: ./client
     container_name: fl-client2
     environment:
       - CLIENT_ID=2
-      - TOTAL_CLIENTS=2
+      - TOTAL_CLIENTS=3
     depends_on:
       - server
     networks:
       - flnet
+    volumes:
+      - ./results:/app/results
+
+  client3:
+    build: ./client
+    container_name: fl-client3
+    environment:
+      - CLIENT_ID=3
+      - TOTAL_CLIENTS=3
+    depends_on:
+      - server
+    networks:
+      - flnet
+    volumes:
+      - ./results:/app/results
 
 networks:
   flnet:

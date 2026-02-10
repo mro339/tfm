@@ -14,9 +14,27 @@ from flwr.common import Metrics
 """
 
 #Calculamos como está funcionando el modelo, haciendo una media con todos los clientes y su conjunto de datos.
+CURRENT_ROUND = 0
 def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
+    global CURRENT_ROUND
+    CURRENT_ROUND += 1
+    
     accuracies = [num_examples * m["accuracy"] for num_examples, m in metrics]
     examples = [num_examples for num_examples, _ in metrics]
+    global_accurancy = sum(accuracies) / sum(examples)
+
+
+    resultado_ronda= {
+        "ronda": CURRENT_ROUND,
+        "global_accurancy": global_accurancy,
+        "notas_individuales": accuracies
+    }
+
+    with open("/app/results/global_results.txt", "a") as f:
+        f.write(str(resultado_ronda) + "\n")
+    
+    print(f"Ronda: {CURRENT_ROUND}. Global: {global_accurancy:.4f}  {resultado_ronda}")
+    
     return {"accuracy": sum(accuracies) / sum(examples)}
 
 #Aqui modificamos el código, para obtener el número total de clientes.
@@ -35,11 +53,14 @@ strategy = fl.server.strategy.FedAvg( #Define la estrategia de agregación feder
 
 
 if __name__ == "__main__": # Punto de entrada del servidor. Si el archivo se ejecuta directamente, se inicia el servidor federado
-    print("Servidor federado iniciado...")
+    # Limpiar fichero anterior al arrancar
+    if os.path.exists("/app/results/global_results.txt"):
+        os.remove("/app/results/global_results.txt")
 
+    print(f"Servidor iniciado con estrategia FedAvg. Esperando a {total_clients} clientes...")
     fl.server.start_server( 
         server_address="0.0.0.0:8080", #Escucha en todas las interfaces de red en el puerto 8080
-        config=fl.server.ServerConfig(num_rounds=3), 
+        config=fl.server.ServerConfig(num_rounds=10), #Número de rondas de entrenamiento federado
         strategy=strategy
     )
 

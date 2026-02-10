@@ -2,6 +2,7 @@ import os # Para manejar variables de entorno. Aquí se usa para obtener el ID d
 import flwr as fl
 import tensorflow as tf
 import numpy as np
+import json
 
 """
 **Sección de cargar datos MNIST**
@@ -77,9 +78,14 @@ El flujo de trabajo es el siguiente, una vez ya ordenados los datos:
  """
 
 #Ordenamos los datos.
+# ENTRENAMIENTO
 indices_ordenados = np.argsort(y_train)
 x_train_sorted = x_train[indices_ordenados]
 y_train_sorted = y_train[indices_ordenados]
+# PRUEBA
+indices_test = np.argsort(y_test)
+x_test_sorted = x_test[indices_test]
+y_test_sorted = y_test[indices_test]
 
 #Obtenemos el ID de cada cliente y el número total de clientes, definidos en el sistema de orígenes. 
 # Ver el docker-compose.yml o generate_compose.py.
@@ -89,20 +95,35 @@ num_clients = int(os.environ.get("TOTAL_CLIENTS", "2"))
 #Para identficarlo en los logs.
 print(f" Cliente ID: {client_id} de {num_clients}")
 
+
+#Dividimos: ENTRANAMIENTO
 #Tamaño de la partición de datos para cada cliente.
 partition_size = len(x_train) // num_clients # '//' significa división entera
-
-#Incii y fin de la partición.
+#Incio y fin de la partición.
 start = (client_id - 1) * partition_size 
 end = start + partition_size 
-
 #Datos de entrenamiento para este cliente.
 x_train_c = x_train_sorted[start:end] 
 y_train_c = y_train_sorted[start:end]
 
+#Dividimos: PRUEBA
+#Tamaño de la partición de datos para cada cliente.
+partition_size_test = len(x_test) // num_clients
+#Incio y fin de la partición.
+start_test = (client_id - 1) * partition_size_test
+end_test = start_test + partition_size_test
+#Datos de prueba para este cliente.
+x_test_c = x_test_sorted[start_test:end_test]
+y_test_c = y_test_sorted[start_test:end_test]
+
+#Mezclamos los datos:
+perm_train = np.random.permutation(len(x_train_c))
+x_train_c = x_train_c[perm_train]
+y_train_c = y_train_c[perm_train]
+
 print(f"¡¡¡¡Cliente {client_id} ha arrancado.!!!")
-print(f"  -Etiquetas únicas en este cliente: {np.unique(y_train_c)}")
-print(f"  -Total imágenes: {len(x_train_c)}")
+print(f"   -> Train: {len(x_train_c)} imágenes. Etiquetas: {np.unique(y_train_c)}")
+print(f"   -> Test:  {len(x_test_c)} imágenes. Etiquetas: {np.unique(y_test_c)}")
 
 """
 **Construimos el modelo de red neuronal convolucional (CNN)**
@@ -174,6 +195,17 @@ Por lo que estamos trabajando con pesos.
     3.3 Devuelve la pérdida y la precisión.
 
 Referencia: https://flower.dev/docs/
+
+Para garantizar la convergencia del algoritmo Federated Averaging, se asegura una inicialización común. 
+En la ronda 1, el servidor selecciona los parámetros de un cliente arbitrario y los distribuye a toda la federación, 
+asegurando que todos los clientes comiencen el descenso de gradiente desde la misma posición en el espacio de parámetros.
+
+Esto ocurre porque si cada cliente comienza con una inicialización diferente, 
+el proceso de agregación podría no converger a un modelo global óptimo, 
+ya que los clientes podrían estar actualizando sus modelos en direcciones divergentes.
+
+¡¡Esto ocurre dentro de la libreria de Flower, por lo que no es necesario implementarlo manualmente!!
+
 """
 
 class FlowerClient(fl.client.NumPyClient): #Definir un cliente Flower que implementa los métodos necesarios para el entrenamiento y evaluación federados
@@ -186,11 +218,32 @@ class FlowerClient(fl.client.NumPyClient): #Definir un cliente Flower que implem
         model.fit(x_train_c, y_train_c, epochs=1, batch_size=32, verbose=0) #Una época es un ciclo completo a través del conjunto de datos. batch_size es el número de muestras que se procesan antes de actualizar los pesos del modelo. Verbose=0 significa que no se muestra salida durante el entrenamiento.
         return model.get_weights(), len(x_train_c), {} #Devolvemos los pesos y el número de muestras usadas.
 
+
     def evaluate(self, parameters, config=None):
         model.set_weights(parameters)
-        loss, acc = model.evaluate(x_test, y_test, verbose=2)
+        loss, acc = model.evaluate(x_test_c, y_test_c, verbose=2)
+       
+        mi_resultado = {
+            "loss": loss,
+            "accuracy": acc,
+            "data_size": len(x_test_c),
+            "labels": str(np.unique(y_test_c)) # Guardamos qué números tenía este cliente
+        }
+
+        # Guardamos en mi propio fichero usando mi ID
+        archivo_propio = f"/app/results/client_{client_id}_metrics.json"
+        
+        with open(archivo_propio, "a") as f:
+            f.write(json.dumps(mi_resultado) + "\n")
+        
+
+        print(f"📝 Cliente {client_id}: Resultado guardado (Acc: {acc:.4f})")
+
+
+        
         return loss, len(x_test), {"accuracy": acc}
 
+        
 """
 **Iniciar el cliente Flower**
 Iniciamos el cliente Flower, conectándonos al servidor en la dirección "server:8080
