@@ -312,7 +312,7 @@ class FlowerClient(fl.client.NumPyClient): #Definir un cliente Flower que implem
     def evaluate(self, parameters, config=None):
         model.set_weights(parameters)
         loss, acc = model.evaluate(x_test_c, y_test_c, verbose=2)
-        ronda +=1
+       
         #GLOBAL Current Round: El número de ronda actual, que se recibe del servidor a través del diccionario config. Si no se encuentra, se asigna "desconocida".
         mi_resultado = {
             "tiempo": str(datetime.datetime.now()), #a que hora se ha ejecutado. hora, minutos y segundos

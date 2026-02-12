@@ -22,9 +22,9 @@ services:
     environment:
       - CLIENT_ID=1
       - TOTAL_CLIENTS=3
-      - NETWORK_LATENCY=10ms
-      - NETWORK_LOSS=0%
-      - NETWORK_BANDWIDTH=1gbit
+      - NET_LATENCY=10ms
+      - NET_LOSS=0%
+      - NET_BANDWIDTH=1gbit
       - CPU_LIMIT=4.0
       - PERFIL=Servidor
     depends_on:
@@ -46,9 +46,33 @@ services:
     environment:
       - CLIENT_ID=2
       - TOTAL_CLIENTS=3
-      - NETWORK_LATENCY=20ms
-      - NETWORK_LOSS=0%
-      - NETWORK_BANDWIDTH=100mbit
+      - NET_LATENCY=100ms
+      - NET_LOSS=1%
+      - NET_BANDWIDTH=10mbit
+      - CPU_LIMIT=1.0
+      - PERFIL=Movil
+    depends_on:
+      - server
+    networks:
+      - flnet
+    volumes:
+      - ./results:/app/results
+    cap_add:
+      - NET_ADMIN
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+
+  client3:
+    build: ./client
+    container_name: fl-client3
+    environment:
+      - CLIENT_ID=3
+      - TOTAL_CLIENTS=3
+      - NET_LATENCY=20ms
+      - NET_LOSS=0%
+      - NET_BANDWIDTH=100mbit
       - CPU_LIMIT=2.0
       - PERFIL=WiFi
     depends_on:
@@ -63,30 +87,6 @@ services:
       resources:
         limits:
           cpus: '2.0'
-
-  client3:
-    build: ./client
-    container_name: fl-client3
-    environment:
-      - CLIENT_ID=3
-      - TOTAL_CLIENTS=3
-      - NETWORK_LATENCY=200ms
-      - NETWORK_LOSS=5%
-      - NETWORK_BANDWIDTH=1mbit
-      - CPU_LIMIT=0.5
-      - PERFIL=IoT
-    depends_on:
-      - server
-    networks:
-      - flnet
-    volumes:
-      - ./results:/app/results
-    cap_add:
-      - NET_ADMIN
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
 
 networks:
   flnet:
