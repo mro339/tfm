@@ -13,7 +13,8 @@ services:
       - TOTAL_CLIENTS=3 
     volumes:
       - ./results:/app/results
-
+    cap_add:
+      - NET_ADMIN
 
   client1:
     build: ./client
@@ -21,12 +22,23 @@ services:
     environment:
       - CLIENT_ID=1
       - TOTAL_CLIENTS=3
+      - NETWORK_LATENCY=10ms
+      - NETWORK_LOSS=0%
+      - NETWORK_BANDWIDTH=1gbit
+      - CPU_LIMIT=4.0
+      - PERFIL=Servidor
     depends_on:
       - server
     networks:
       - flnet
     volumes:
       - ./results:/app/results
+    cap_add:
+      - NET_ADMIN
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
 
   client2:
     build: ./client
@@ -34,12 +46,23 @@ services:
     environment:
       - CLIENT_ID=2
       - TOTAL_CLIENTS=3
+      - NETWORK_LATENCY=20ms
+      - NETWORK_LOSS=0%
+      - NETWORK_BANDWIDTH=100mbit
+      - CPU_LIMIT=2.0
+      - PERFIL=WiFi
     depends_on:
       - server
     networks:
       - flnet
     volumes:
       - ./results:/app/results
+    cap_add:
+      - NET_ADMIN
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
 
   client3:
     build: ./client
@@ -47,12 +70,23 @@ services:
     environment:
       - CLIENT_ID=3
       - TOTAL_CLIENTS=3
+      - NETWORK_LATENCY=200ms
+      - NETWORK_LOSS=5%
+      - NETWORK_BANDWIDTH=1mbit
+      - CPU_LIMIT=0.5
+      - PERFIL=IoT
     depends_on:
       - server
     networks:
       - flnet
     volumes:
       - ./results:/app/results
+    cap_add:
+      - NET_ADMIN
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
 
 networks:
   flnet:

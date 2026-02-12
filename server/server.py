@@ -21,13 +21,15 @@ def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
     
     accuracies = [num_examples * m["accuracy"] for num_examples, m in metrics]
     examples = [num_examples for num_examples, _ in metrics]
+    precision_clientes = [m["accuracy"] for _, m in metrics]
     global_accurancy = sum(accuracies) / sum(examples)
 
 
     resultado_ronda= {
         "ronda": CURRENT_ROUND,
         "global_accurancy": global_accurancy,
-        "notas_individuales": accuracies
+        "precision_clientes": precision_clientes,
+        "num_aciertos": accuracies
     }
 
     with open("/app/results/global_results.txt", "a") as f:

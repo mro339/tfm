@@ -80,10 +80,31 @@ docker rm -f "nombres de los contenedores"
 docker compose logs -f server
 """
 import sys
+import os
+import random
+
 
 # Configuración
 # Puedes cambiar esto o pasarlo por argumento
 NUM_CLIENTS = 3
+
+
+#Creamos la carpeta results para guardar los resultados globales del servidor
+if not os.path.exists("results"):
+    os.makedirs("results")
+
+
+#Creamos los distintos perfiles de hardware y red para cada cliente, y los guardamos.
+PERFILES = {
+    "IoT":    {"cpu": "0.5", "latencia": "200ms", "loss": "5%", "banda": "1mbit"},   # Sensores / Raspberry Pi antigua
+    "Movil":  {"cpu": "1.0", "latencia": "100ms", "loss": "1%", "banda": "10mbit"},  # Red 4G media
+    "WiFi":   {"cpu": "2.0", "latencia": "20ms",  "loss": "0%", "banda": "100mbit"},  # PC en casa
+    "Servidor": {"cpu": "4.0", "latencia": "10ms",  "loss": "0%", "banda": "1gbit"}    # Servidor potente
+}
+
+
+
+
 
 # Plantilla del encabezado y el servidor (que siempre es igual)
 yaml_content = f"""
@@ -101,11 +122,15 @@ services:
       - TOTAL_CLIENTS={NUM_CLIENTS} 
     volumes:
       - ./results:/app/results
-
+    cap_add:
+      - NET_ADMIN
 """
 
 # Bucle para generar los clientes
 for i in range(1, NUM_CLIENTS + 1):
+    nombre_perfil = random.choice(list(PERFILES.keys()))
+    perfil = PERFILES[nombre_perfil]
+
     yaml_content += f"""
   client{i}:
     build: ./client
@@ -113,12 +138,23 @@ for i in range(1, NUM_CLIENTS + 1):
     environment:
       - CLIENT_ID={i}
       - TOTAL_CLIENTS={NUM_CLIENTS}
+      - NETWORK_LATENCY={perfil['latencia']}
+      - NETWORK_LOSS={perfil['loss']}
+      - NETWORK_BANDWIDTH={perfil['banda']}
+      - CPU_LIMIT={perfil['cpu']}
+      - PERFIL={nombre_perfil}
     depends_on:
       - server
     networks:
       - flnet
     volumes:
       - ./results:/app/results
+    cap_add:
+      - NET_ADMIN
+    deploy:
+      resources:
+        limits:
+          cpus: '{perfil["cpu"]}'
 """
 
 # Añadir la red al final
