@@ -18,7 +18,7 @@ def configurar_red_adversa():
     latencia = os.environ.get("NET_LATENCY", "0ms")
     perdida = os.environ.get("NET_LOSS", "0%")
     ancho_banda = os.environ.get("NET_BANDWIDTH", "1000mbit")
-    tipo_dispositivo = os.environ.get("DEVICE_TYPE", "Desconocido")
+    tipo_dispositivo = os.environ.get("PERFIL", "Desconocido")
     
     print(f"CONFIGURANDO RED ({tipo_dispositivo}):")
     print(f"   -> Latencia: {latencia} | Pérdida: {perdida} | Banda: {ancho_banda}")

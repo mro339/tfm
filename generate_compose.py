@@ -138,9 +138,9 @@ for i in range(1, NUM_CLIENTS + 1):
     environment:
       - CLIENT_ID={i}
       - TOTAL_CLIENTS={NUM_CLIENTS}
-      - NETWORK_LATENCY={perfil['latencia']}
-      - NETWORK_LOSS={perfil['loss']}
-      - NETWORK_BANDWIDTH={perfil['banda']}
+      - NET_LATENCY={perfil['latencia']}
+      - NET_LOSS={perfil['loss']}
+      - NET_BANDWIDTH={perfil['banda']}
       - CPU_LIMIT={perfil['cpu']}
       - PERFIL={nombre_perfil}
     depends_on:
