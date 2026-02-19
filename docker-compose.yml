@@ -10,7 +10,7 @@ services:
     networks:
       - flnet
     environment:
-      - TOTAL_CLIENTS=3 
+      - TOTAL_CLIENTS=4 
     volumes:
       - ./results:/app/results
     cap_add:
@@ -21,12 +21,13 @@ services:
     container_name: fl-client1
     environment:
       - CLIENT_ID=1
-      - TOTAL_CLIENTS=3
-      - NET_LATENCY=10ms
-      - NET_LOSS=0%
-      - NET_BANDWIDTH=1gbit
-      - CPU_LIMIT=4.0
-      - PERFIL=Servidor
+      - TOTAL_CLIENTS=4
+      - NET_LATENCY=200ms
+      - NET_LOSS=5%
+      - NET_BANDWIDTH=1mbit
+      - CPU_LIMIT=0.5
+      - PERFIL=IoT
+      - START_DELAY=0
     depends_on:
       - server
     networks:
@@ -38,19 +39,20 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '4.0'
+          cpus: '0.5'
 
   client2:
     build: ./client
     container_name: fl-client2
     environment:
       - CLIENT_ID=2
-      - TOTAL_CLIENTS=3
+      - TOTAL_CLIENTS=4
       - NET_LATENCY=100ms
       - NET_LOSS=1%
       - NET_BANDWIDTH=10mbit
       - CPU_LIMIT=1.0
       - PERFIL=Movil
+      - START_DELAY=60
     depends_on:
       - server
     networks:
@@ -69,12 +71,13 @@ services:
     container_name: fl-client3
     environment:
       - CLIENT_ID=3
-      - TOTAL_CLIENTS=3
-      - NET_LATENCY=20ms
-      - NET_LOSS=0%
-      - NET_BANDWIDTH=100mbit
-      - CPU_LIMIT=2.0
-      - PERFIL=WiFi
+      - TOTAL_CLIENTS=4
+      - NET_LATENCY=100ms
+      - NET_LOSS=1%
+      - NET_BANDWIDTH=10mbit
+      - CPU_LIMIT=1.0
+      - PERFIL=Movil
+      - START_DELAY=0
     depends_on:
       - server
     networks:
@@ -86,7 +89,41 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '2.0'
+          cpus: '1.0'
+
+  client4:
+    build: ./client
+    container_name: fl-client4
+    environment:
+      - CLIENT_ID=4
+      - TOTAL_CLIENTS=4
+      - NET_LATENCY=100ms
+      - NET_LOSS=1%
+      - NET_BANDWIDTH=10mbit
+      - CPU_LIMIT=1.0
+      - PERFIL=Movil
+      - START_DELAY=0
+    depends_on:
+      - server
+    networks:
+      - flnet
+    volumes:
+      - ./results:/app/results
+    cap_add:
+      - NET_ADMIN
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+
+  pumba:
+    image: gaiaadm/pumba
+    container_name: chaos-monkey
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --random --interval 2m kill --signal SIGTERM "re2:^fl-client"
+    depends_on:
+      - server
 
 networks:
   flnet:
