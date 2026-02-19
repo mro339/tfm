@@ -24,19 +24,25 @@ def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
     precision_clientes = [m["accuracy"] for _, m in metrics]
     global_accurancy = sum(accuracies) / sum(examples)
 
+    #Obtenemos los clientes que particiapn y activos.
+    clientes_participantes = [m.get("client_id", "Desconocido") for _, m in metrics]
+    num_clientes_activos = len(clientes_participantes)
+
 
     resultado_ronda= {
         "ronda": CURRENT_ROUND,
         "global_accurancy": global_accurancy,
         "precision_clientes": precision_clientes,
-        "num_aciertos": accuracies
+        "num_aciertos": accuracies,
+        "num_clientes_activos": num_clientes_activos,
+        "clientes_participantes": clientes_participantes
     }
 
     with open("/app/results/global_results.txt", "a") as f:
         f.write(str(resultado_ronda) + "\n")
     
-    print(f"Ronda: {CURRENT_ROUND}. Global: {global_accurancy:.4f}  {resultado_ronda}")
-    
+    print(f"Ronda: {CURRENT_ROUND} | Clientes activos: {num_clientes_activos} {clientes_participantes} | Acc Global: {global_accurancy:.4f}")
+
     return {"accuracy": sum(accuracies) / sum(examples)}
 
 #Aqui modificamos el código, para obtener el número total de clientes.
@@ -49,7 +55,7 @@ strategy = fl.server.strategy.FedAvg( #Define la estrategia de agregación feder
     fraction_evaluate=1.0, #Porcentaje de clientes que participan en cada ronda de evaluación 1=100% (TODOS) la diferecncia con fit es que evalua el modelo despues de entrenar y fit es entrenar
     min_fit_clients=min_clients, #Número mínimo de clientes que deben participar en el entrenamiento por ronda
     min_evaluate_clients=min_clients, #Número mínimo de clientes que deben participar en la evaluación por ronda
-    min_available_clients=total_clients, #Número mínimo de clientes que deben estar disponibles para que el servidor inicie una ronda
+    min_available_clients=min_clients, #Número mínimo de clientes que deben estar disponibles para que el servidor inicie una ronda // Antes estaba todos, ahora solo el mínimo
     evaluate_metrics_aggregation_fn=weighted_average,
   )
 
@@ -62,7 +68,7 @@ if __name__ == "__main__": # Punto de entrada del servidor. Si el archivo se eje
     print(f"Servidor iniciado con estrategia FedAvg. Esperando a {total_clients} clientes...")
     fl.server.start_server( 
         server_address="0.0.0.0:8080", #Escucha en todas las interfaces de red en el puerto 8080
-        config=fl.server.ServerConfig(num_rounds=10), #Número de rondas de entrenamiento federado
+        config=fl.server.ServerConfig(num_rounds=20), #Número de rondas de entrenamiento federado
         strategy=strategy
     )
 

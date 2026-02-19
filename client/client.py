@@ -24,10 +24,10 @@ def configurar_red_adversa():
     print(f"   -> Latencia: {latencia} | Pérdida: {perdida} | Banda: {ancho_banda}")
 
     try:
-        # 1. Limpiamos reglas anteriores (por si acaso)
+        # Borramos instancias anteriores...
         subprocess.run("tc qdisc del dev eth0 root", shell=True, stderr=subprocess.DEVNULL)
         
-        # 2. Aplicamos las nuevas reglas (NetEm = Network Emulator)
+        # Aplicamos las nuevas reglas (NetEm = Network Emulator)
         # rate: limita velocidad de descarga/subida
         # delay: añade ping
         # loss: tira paquetes aleatoriamente
@@ -36,12 +36,12 @@ def configurar_red_adversa():
         resultado = subprocess.run(comando, shell=True, capture_output=True, text=True)
         
         if resultado.returncode == 0:
-            print("   ✅ Red configurada con éxito.")
+            print("Red configurada con éxito.")
         else:
-            print(f"   ⚠️ Error configurando red (¿Falta NET_ADMIN?): {resultado.stderr}")
+            print(f"Error configurando red (¿Falta NET_ADMIN?): {resultado.stderr}")
             
     except Exception as e:
-        print(f"   ❌ Excepción configurando red: {e}")
+        print(f" Excepción configurando red: {e}")
 
 # --- LLAMADA INICIAL ---
 configurar_red_adversa()
@@ -333,11 +333,11 @@ class FlowerClient(fl.client.NumPyClient): #Definir un cliente Flower que implem
             f.write(json.dumps(mi_resultado) + "\n")
         
 
-        print(f"📝 Cliente {client_id}: Resultado guardado (Acc: {acc:.4f})")
+        print(f"Cliente {client_id}: Resultado guardado (Acc: {acc:.4f})")
 
 
         
-        return loss, len(x_test_c), {"accuracy": acc, "loss": loss} #Devolvemos la pérdida, el número de muestras usadas y un diccionario con métricas adicionales (en este caso, la precisión).
+        return loss, len(x_test_c), {"accuracy": acc, "loss": loss, "client_id": client_id} #Devolvemos la pérdida, el número de muestras usadas y un diccionario con métricas adicionales (en este caso, la precisión).
 
         
 """
@@ -348,4 +348,12 @@ Referencia: https://flower.dev/docs/
 """
 
 if __name__ == "__main__":
+    # Late Joining
+    delay_inicio = int(os.environ.get("START_DELAY", "0"))
+    if delay_inicio > 0:
+        print(f"Cliente {client_id}: Esperando {delay_inicio}s antes de unirse (Late Joining)...")
+        time.sleep(delay_inicio)
+        print(f"Cliente {client_id}: Entrando al servidor")
+
+    # Iniciar el cliente Flower original
     fl.client.start_numpy_client(server_address="server:8080", client=FlowerClient())

@@ -86,7 +86,7 @@ import random
 
 # Configuración
 # Puedes cambiar esto o pasarlo por argumento
-NUM_CLIENTS = 3
+NUM_CLIENTS = 4
 
 
 #Creamos la carpeta results para guardar los resultados globales del servidor
@@ -143,6 +143,7 @@ for i in range(1, NUM_CLIENTS + 1):
       - NET_BANDWIDTH={perfil['banda']}
       - CPU_LIMIT={perfil['cpu']}
       - PERFIL={nombre_perfil}
+      - START_DELAY={random.choice([0, 0, 30, 60])}
     depends_on:
       - server
     networks:
@@ -155,6 +156,19 @@ for i in range(1, NUM_CLIENTS + 1):
       resources:
         limits:
           cpus: '{perfil["cpu"]}'
+"""
+
+# Añadimos Pumba (El asesino aleatorio para Dropouts)
+# Mata un contenedor aleatorio que empiece por "fl-client" cada X minutos
+yaml_content += """
+  pumba:
+    image: gaiaadm/pumba
+    container_name: chaos-monkey
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --random --interval 2m kill --signal SIGTERM "re2:^fl-client"
+    depends_on:
+      - server
 """
 
 # Añadir la red al final
