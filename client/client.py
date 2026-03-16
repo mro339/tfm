@@ -6,6 +6,7 @@ import json
 import datetime
 import subprocess # Para ejecutar comandos de linux
 import time
+from sklearn.metrics import precision_score, recall_score, f1_score
 #import flex.data
 #from flex.data import Dataset, FedDatasetConfig, FedDataDistribution
 
@@ -43,7 +44,7 @@ def configurar_red_adversa():
     except Exception as e:
         print(f" Excepción configurando red: {e}")
 
-# --- LLAMADA INICIAL ---
+#Llamada incial.
 configurar_red_adversa()
 
 
@@ -311,15 +312,36 @@ class FlowerClient(fl.client.NumPyClient): #Definir un cliente Flower que implem
     
     def evaluate(self, parameters, config=None):
         model.set_weights(parameters)
+        
+        #Leer la ronda.
+        server_round = config.get("server_round", 0) if config else 0
+
+        #Evaluación básica.
         loss, acc = model.evaluate(x_test_c, y_test_c, verbose=2)
        
+       #METRICAS
+        #Métricas relacionales sobre el conjunto local
+        y_pred_probs = model.predict(x_test_c, verbose=0)
+        y_pred = np.argmax(y_pred_probs, axis=1) # Obtenemos la clase (0-9) con más probabilidad
+
+        # average='weighted' es vital en entornos Non-IID porque tienes datos desbalanceados
+        precision = precision_score(y_test_c, y_pred, average='weighted', zero_division=0)
+        recall = recall_score(y_test_c, y_pred, average='weighted', zero_division=0)
+        f1 = f1_score(y_test_c, y_pred, average='weighted', zero_division=0)
+
+
         #GLOBAL Current Round: El número de ronda actual, que se recibe del servidor a través del diccionario config. Si no se encuentra, se asigna "desconocida".
         mi_resultado = {
-            "tiempo": str(datetime.datetime.now()), #a que hora se ha ejecutado. hora, minutos y segundos
+            "ronda": server_round,          # <-- NUEVO
+            "tiempo": str(datetime.datetime.now()),
+            "client_id": client_id,         # Para trazar quién es quién
             "loss": loss,
             "accuracy": acc,
+            "precision": float(precision),  # Convertimos a float nativo para JSON
+            "recall": float(recall),
+            "f1_score": float(f1),
             "data_size": len(x_test_c),
-            "labels": str(np.unique(y_test_c)) # Guardamos qué números tenía este cliente
+            "labels": str(np.unique(y_test_c).tolist())
         }
 
         # Crear carpeta results si no existe (por seguridad)
@@ -335,10 +357,17 @@ class FlowerClient(fl.client.NumPyClient): #Definir un cliente Flower que implem
 
         print(f"Cliente {client_id}: Resultado guardado (Acc: {acc:.4f})")
 
-
+        #Métricas para devolverselo al servidor:
+        metricas_para_servidor = {
+            "accuracy": acc, 
+            "loss": loss, 
+            "precision": float(precision), 
+            "recall": float(recall), 
+            "f1_score": float(f1), 
+            "client_id": client_id
+        }
         
-        return loss, len(x_test_c), {"accuracy": acc, "loss": loss, "client_id": client_id} #Devolvemos la pérdida, el número de muestras usadas y un diccionario con métricas adicionales (en este caso, la precisión).
-
+        return float(loss), len(x_test_c), metricas_para_servidor
         
 """
 **Iniciar el cliente Flower**

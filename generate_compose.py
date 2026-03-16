@@ -10,7 +10,7 @@ Realmente al ejecturarse, se lee desde abajo hacia arriba, levantando primero la
 
 1. RED flnet: federated learning network:
 La conexión que va a tener es de tipo bridge (puente). Es la de por defecto.
-la red Bridge funciona como un punete virtual, conecta los distintos contenedores entre sí y con el host, permitiendo una comuncación fluida y privada.
+la red Bridge funciona como un puente virtual, conecta los distintos contenedores entre sí y con el host, permitiendo una comuncación fluida y privada.
 No se necesita configuración adicional, ya que Docker gestiona automáticamente la asignación de direcciones IP y el enrutamiento dentro de la red bridge.
 Otras opciones son: host (usa la tarjeta red de mi ordenador), none (no hay red), overlay (avanzado) permite conexiones con ordenadores físicos diferente) y Macvlan (asigna direcciones MAC a los contenedores).
 

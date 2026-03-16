@@ -7,7 +7,8 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y iproute2 && rm -rf /var/lib/apt/lists/*
 
 #Instala las dependencias necesarias: Flower (flwr) y TensorFlow versión 2.12 sin usar caché para reducir el tamaño de la imagen
-RUN pip install --no-cache-dir flwr tensorflow==2.12
+RUN pip install --no-cache-dir flwr tensorflow==2.12 scikit-learn
+
 #Copia el archivo server.py desde el host al directorio de trabajo del contenedor
 COPY server.py .
 

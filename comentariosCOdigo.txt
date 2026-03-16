@@ -1,0 +1,24 @@
+
+- Cosas añadidas
+He añadido las rondas a cada cliente.
+He cambiado los resultados goblales a tipo .json
+He añadido más métricas para medir el rendimiento del modelo.
+Mejora de Logs.
+
+
+- Cosas por hacer
+Revisar código que haya cambiado y por tanto no sea necesario
+hacer todas las pruebas, del profesor
+Borrar example.ipnyb????? Creo que no hace falta, leerlo detalladamente para ver si es o no importante
+Borrar global_results.txt??????????
+
+
+
+
+- Dudas para el profe
+He realizado una prueba ampliando el número de rondas, para ver que ocurre si solo hay un cliente, dado a que no cumple el mínimo de clientes para seguir la ronda, a pesar de que el tiempo avance, no se registra información, resultados (en este caso la precisión única del registro) y por tanto se queda estancado.
+Idea: En este caso podríamos implementar una parada, para que en caso de que no haya un mínimo de clientes. Por lo tanto se pararía y habría saldría un mensaje "Ronda terminada, no hay suficientes clientes para entrenar.".
+
+No sé si hacer que me genere un documento que por salida o algo para que me haga gráficas, tablas, etc..
+
+Hacer un agente para que lea los documentos puede ser entretenido, y no es tan dificil, pero por el tema de las incompatibilidades de las versiones de pyhton puede llegar a ser dificil, dado a que me tuve que ir a una versión de pyhton 3.9 para hacer esta arquitectura, ya que las siguietnes eran demasiadas modernas, pero estas siguen siendo muy antiguas para hacer agentes.
