@@ -47,6 +47,7 @@ Este comando construye las imágenes Docker (si no están creadas) e inicia el s
 ---
 
 ## **Mapa de configuración de cada parámetro**
+
 El proyecto está diseñado de forma modular. Aquí tienes la guía exacta de dónde ir para modificar los parámetros de tus experimentos.
 
 1. **Infraestructura y Red (En `generate_compose.py`)**
@@ -58,15 +59,17 @@ El proyecto está diseñado de forma modular. Aquí tienes la guía exacta de d�
 
     - **Dropouts (Ingeniería del Caos)**: Al final del script, en la configuración del servicio pumba. Puedes cambiar el intervalo de eliminación en la línea `command: --random --interval 2m kill --signal SIGTERM "re2:^fl-client"`.
 
-2. **Parámetros del Aprendizaje Federado (En `server.py`)**
-    Controla cómo el servidor coordina el entrenamiento:
+2. **Parámetros del Aprendizaje Federado (En `server.py`)** 
+
+   Controla cómo el servidor coordina el entrenamiento:
 
     - **Número de Rondas (Epochs globales)**: Modifica el parámetro `num_rounds=10` dentro de `fl.server.ServerConfig()`.
 
     - **Tolerancia a fallos**: Modifica la variable `min_clients = int(total_clients * 0.5)` para decidir qué porcentaje de clientes vivos es necesario para que el servidor inicie o continúe una ronda sin quedarse bloqueado.
 
 3. **Datos y Modelo Local (En `client.py`)**
-    Controla el comportamiento interno de cada dispositivo:
+
+   Controla el comportamiento interno de cada dispositivo:
 
     - **Método de distribución de datos**: Variable `DISTRIBUTION_METHOD` (Opciones: `"dirichlet"`, `"pathological"`, `"iid"`).
 
