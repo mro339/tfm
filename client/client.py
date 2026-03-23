@@ -201,7 +201,7 @@ def partition_data(x, y, client_id, num_clients, method="dirichlet", alpha=0.5, 
 # "dirichlet"    -> Realista (desbalanceado suave o fuerte según alpha)
 # "iid"          -> Perfecto (irreal)
 
-DISTRIBUTION_METHOD = "dirichlet" 
+DISTRIBUTION_METHOD = "iid" 
 DIRICHLET_ALPHA = 0.1 # Cuanto más pequeño, más desbalanceado. 0.1 es muy desbalanceado, 1 es casi balanceado (IID).
 DIRICHLET_BALANCE_QUANTITY = True # Si True, se asegura que ningún cliente tenga demasiados datos (freno para clientes con mucho más datos que otros).
 
@@ -305,6 +305,20 @@ class FlowerClient(fl.client.NumPyClient): #Definir un cliente Flower que implem
         return model.get_weights()
 
     def fit(self, parameters, config=None):
+        
+        #Ataque bizantino (Envenenamiento del modelo)
+        is_attacker = os.environ.get("IS_ATTACKER", "False") == "True"
+
+        if is_attacker:
+            print(f"[ATACANTE] Cliente {client_id}: Generando pesos aleatorios destructivos.")
+            pesos_actuales = model.get_weights()
+            # Generamos ruido gaussiano con la misma forma exacta que la red neuronal
+            pesos_maliciosos = [np.random.normal(loc=0.0, scale=10.0, size=w.shape) for w in pesos_actuales]
+            
+            # Engañaos al modelo con nuestros datos locales
+            return pesos_maliciosos, len(x_train_c), {}
+
+        #Cliente normal
         model.set_weights(parameters) #Establecer los pesos del modelo recibido del servidor.
         model.fit(x_train_c, y_train_c, epochs=1, batch_size=32, verbose=0) #Una época es un ciclo completo a través del conjunto de datos. batch_size es el número de muestras que se procesan antes de actualizar los pesos del modelo. Verbose=0 significa que no se muestra salida durante el entrenamiento.
         return model.get_weights(), len(x_train_c), {} #Devolvemos los pesos y el número de muestras usadas.

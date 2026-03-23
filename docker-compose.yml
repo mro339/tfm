@@ -22,11 +22,12 @@ services:
     environment:
       - CLIENT_ID=1
       - TOTAL_CLIENTS=4
-      - NET_LATENCY=200ms
-      - NET_LOSS=5%
-      - NET_BANDWIDTH=1mbit
-      - CPU_LIMIT=0.5
-      - PERFIL=IoT
+      - IS_ATTACKER=False
+      - NET_LATENCY=20ms
+      - NET_LOSS=0%
+      - NET_BANDWIDTH=100mbit
+      - CPU_LIMIT=2.0
+      - PERFIL=WiFi
       - START_DELAY=0
     depends_on:
       - server
@@ -39,7 +40,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.5'
+          cpus: '2.0'
 
   client2:
     build: ./client
@@ -47,12 +48,13 @@ services:
     environment:
       - CLIENT_ID=2
       - TOTAL_CLIENTS=4
+      - IS_ATTACKER=False
       - NET_LATENCY=100ms
       - NET_LOSS=1%
       - NET_BANDWIDTH=10mbit
       - CPU_LIMIT=1.0
       - PERFIL=Movil
-      - START_DELAY=60
+      - START_DELAY=0
     depends_on:
       - server
     networks:
@@ -72,6 +74,7 @@ services:
     environment:
       - CLIENT_ID=3
       - TOTAL_CLIENTS=4
+      - IS_ATTACKER=False
       - NET_LATENCY=100ms
       - NET_LOSS=1%
       - NET_BANDWIDTH=10mbit
@@ -97,12 +100,13 @@ services:
     environment:
       - CLIENT_ID=4
       - TOTAL_CLIENTS=4
-      - NET_LATENCY=100ms
-      - NET_LOSS=1%
-      - NET_BANDWIDTH=10mbit
-      - CPU_LIMIT=1.0
-      - PERFIL=Movil
-      - START_DELAY=0
+      - IS_ATTACKER=False
+      - NET_LATENCY=200ms
+      - NET_LOSS=5%
+      - NET_BANDWIDTH=1mbit
+      - CPU_LIMIT=0.5
+      - PERFIL=IoT
+      - START_DELAY=30
     depends_on:
       - server
     networks:
@@ -114,7 +118,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
+          cpus: '0.5'
 
   pumba:
     image: gaiaadm/pumba

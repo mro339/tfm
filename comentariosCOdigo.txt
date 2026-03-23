@@ -7,10 +7,13 @@ Mejora de Logs.
 
 
 - Cosas por hacer
+Generar un archivo que muestre gráficas, o recoja los datos en una tabla para posteriormente su visualización.
+Borrar todo lo que había en los clientes.
+Empezar a hacer pruebas.
+Organizar mejor los .json
 Revisar código que haya cambiado y por tanto no sea necesario
 hacer todas las pruebas, del profesor
-Borrar example.ipnyb????? Creo que no hace falta, leerlo detalladamente para ver si es o no importante
-Borrar global_results.txt??????????
+
 
 
 

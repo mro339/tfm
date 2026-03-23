@@ -78,6 +78,17 @@ docker compose down
 docker rm -f "nombres de los contenedores"
 -Para ver los logs
 docker compose logs -f server
+
+
+
+
+
+TEMA ATACANTE: USAR DOS OPCIONES
+fl.server.strategy.FedMedian: Usa la mediana en lugar de la media, mitigando los valores extremos del atacante.
+
+fl.server.strategy.Krum: Selecciona el cliente que más se parezca a la mayoría, descartando al atacante automáticamente.
+
+
 """
 import sys
 import os
@@ -131,6 +142,12 @@ for i in range(1, NUM_CLIENTS + 1):
     nombre_perfil = random.choice(list(PERFILES.keys()))
     perfil = PERFILES[nombre_perfil]
 
+    #Asignamos rol de atacante de forma aleatoria.
+    es_atacante = "True" if i == NUM_CLIENTS else "False"
+    #Como ahora no queremos ponerlo, añadimos:
+    es_atacante = "False"
+
+
     yaml_content += f"""
   client{i}:
     build: ./client
@@ -138,6 +155,7 @@ for i in range(1, NUM_CLIENTS + 1):
     environment:
       - CLIENT_ID={i}
       - TOTAL_CLIENTS={NUM_CLIENTS}
+      - IS_ATTACKER={es_atacante}
       - NET_LATENCY={perfil['latencia']}
       - NET_LOSS={perfil['loss']}
       - NET_BANDWIDTH={perfil['banda']}

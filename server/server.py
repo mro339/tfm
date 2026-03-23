@@ -87,7 +87,7 @@ min_clients = int(total_clients*0.6)
 if min_clients<1: min_clients=1
 
 strategy = fl.server.strategy.FedAvg( #Define la estrategia de agregación federada
-    fraction_fit=1.0, #Porcentaje de clientes que participan en cada ronda de entrenamiento 1=100% (TODOS)
+    fraction_fit=1.0, #Porcentaje de clientes que participan en cada ronda de entrenamiento 1=100% (TODOS) Reducimos cuando tenemos muchos clientes
     fraction_evaluate=1.0, #Porcentaje de clientes que participan en cada ronda de evaluación 1=100% (TODOS) la diferecncia con fit es que evalua el modelo despues de entrenar y fit es entrenar
     min_fit_clients=min_clients, #Número mínimo de clientes que deben participar en el entrenamiento por ronda
     min_evaluate_clients=min_clients, #Número mínimo de clientes que deben participar en la evaluación por ronda
@@ -99,13 +99,13 @@ strategy = fl.server.strategy.FedAvg( #Define la estrategia de agregación feder
 
 if __name__ == "__main__": # Punto de entrada del servidor. Si el archivo se ejecuta directamente, se inicia el servidor federado
     # Limpiar fichero anterior al arrancar
-    if os.path.exists("/app/results/global_results.json"):
-        os.remove("/app/results/global_results.json")
+    #if os.path.exists("/app/results/global_results.json"):
+    #    os.remove("/app/results/global_results.json")
 
     print(f"Servidor iniciado con estrategia FedAvg. Esperando a {total_clients} clientes...")
     fl.server.start_server( 
         server_address="0.0.0.0:8080", #Escucha en todas las interfaces de red en el puerto 8080
-        config=fl.server.ServerConfig(num_rounds=20), #Número de rondas de entrenamiento federado
+        config=fl.server.ServerConfig(num_rounds=10), #Número de rondas de entrenamiento federado
         strategy=strategy
     )
 
