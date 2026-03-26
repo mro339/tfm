@@ -1,0 +1,11 @@
+name: fl-nodo-servidor
+services:
+  server:
+    build: ./server
+    container_name: fl-server-real
+    ports:
+      - "8080:8080" 
+    environment:
+      - TOTAL_CLIENTS=2 # cambiar cuando usemos 3.
+    volumes:
+      - ./results:/app/results

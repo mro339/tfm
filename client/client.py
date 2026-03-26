@@ -201,7 +201,7 @@ def partition_data(x, y, client_id, num_clients, method="dirichlet", alpha=0.5, 
 # "dirichlet"    -> Realista (desbalanceado suave o fuerte según alpha)
 # "iid"          -> Perfecto (irreal)
 
-DISTRIBUTION_METHOD = "iid" 
+DISTRIBUTION_METHOD = "dirichlet" 
 DIRICHLET_ALPHA = 0.1 # Cuanto más pequeño, más desbalanceado. 0.1 es muy desbalanceado, 1 es casi balanceado (IID).
 DIRICHLET_BALANCE_QUANTITY = True # Si True, se asegura que ningún cliente tenga demasiados datos (freno para clientes con mucho más datos que otros).
 

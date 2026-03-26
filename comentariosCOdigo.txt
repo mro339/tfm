@@ -1,4 +1,27 @@
 
+strategy = fl.server.strategy.FedAvg(
+    fraction_fit=1.0, 
+    min_fit_clients=2, # O 3, dependiendo de cuántos ordenadores físicos tengáis
+    min_available_clients=2,
+    
+
+direccion_servidor = os.environ.get("SERVER_ADDRESS", "server:8080")
+fl.client.start_numpy_client(server_address=direccion_servidor, client=FlowerClient())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 - Cosas añadidas
 He añadido las rondas a cada cliente.
 He cambiado los resultados goblales a tipo .json

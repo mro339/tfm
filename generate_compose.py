@@ -145,7 +145,7 @@ for i in range(1, NUM_CLIENTS + 1):
     #Asignamos rol de atacante de forma aleatoria.
     es_atacante = "True" if i == NUM_CLIENTS else "False"
     #Como ahora no queremos ponerlo, añadimos:
-    es_atacante = "False"
+    #es_atacante = "False"
 
 
     yaml_content += f"""

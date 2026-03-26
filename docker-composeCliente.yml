@@ -1,0 +1,17 @@
+name: fl-nodo-cliente
+services:
+  client:
+    build: ./client
+    container_name: fl-client-fisico
+    environment:
+      - CLIENT_ID=1 #Cambiar según cliente
+      - SERVER_ADDRESS=ipServidor:8080 #ip servidor
+      - IS_ATTACKER=False 
+      - START_DELAY=0 # 
+      - NETWORK_LATENCY=0ms 
+      - NETWORK_LOSS=0%
+      - NETWORK_BANDWIDTH=1gbit
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - ./results:/app/results
