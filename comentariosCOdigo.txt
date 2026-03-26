@@ -10,7 +10,9 @@ fl.client.start_numpy_client(server_address=direccion_servidor, client=FlowerCli
 
 
 
+docker compose -f docker-compose-server.yml up --build
 
+docker compose -f docker-compose-client.yml up --build
 
 
 
