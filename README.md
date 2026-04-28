@@ -1,4 +1,4 @@
-# **Simulación de Aprendizaje Federado en un entorno realista.**
+# **Ejecución de Aprendizaje Federado en un entorno realista.**
 
 **Trabajo de fin de máster**
 
