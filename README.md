@@ -89,3 +89,97 @@ La evaluación del modelo se guarda automáticamente en formato JSON estructurad
 - `client_[ID]_metrics.json`: Contiene las métricas locales y el desempeño individual de cada nodo frente a su propio conjunto de datos (Test set).
 
 ---
+
+
+## **Ejecución Multi-Dispositivo**
+
+A continuación, vamos a seguir la siguientes instrucción para hacer una ejecución realista, conectando 3 o más dispositivos:
+
+**1. Decidimos qué ordenador, dispositivo se va a tomar el rol del Servidor**.
+   - Se borrará la carpeta Client, dado a que ya no se va a simular.
+     
+**2. El restante serán Clientes.**
+   - Se borrará la carpeta Server, dado a que ya no se va a simular.
+  
+**3. Ajustamos el código:**
+
+   **3.1 Ajustamos el código de los CLIENTES**:
+
+   Al final del archivo `client.py` modificamos el código.
+   
+   Opción 1:
+   ```python 
+   #Añadimos directamente la IP del servidor 
+   fl.client.start_numpy_client(server_address="150.214.140.152:8080", client=FlowerClient())
+   ```
+   Opción 2:
+   ```python 
+   #Tomamos la dirección del servidor con la variable de entorno.
+   direccion_servidor = os.environ.get("SERVER_ADDRESS", "server:8080")
+   #La añadimos
+   fl.client.start_numpy_client(server_address=direccion_servidor, client=FlowerClient())
+   ```
+   **3.2 Ajustamos el código del SERVIDOR**:
+
+   En el archivo `server.py` modificamos el código:
+
+   ```python 
+   strategy = fl.server.strategy.FedAvg(
+   fraction_fit=1.0, 
+   min_fit_clients=2, # O 3, dependiendo de cuántos ordenadores físicos haya.
+   min_available_clients=2,
+   # ...
+   ```
+**4. Configuración del Docker-Compose:**
+
+   **4.1 SERVIDOR**:
+   ```python 
+name: fl-nodo-servidor
+services:
+  server:
+    build: ./server # ruta del Dockerfille
+    container_name: fl-server-real
+    ports:
+      - "8080:8080" # MUY IMPORTANTE: Esto abre el puerto al mundo exterior
+    environment:
+      - TOTAL_CLIENTS=2 # O 3
+    volumes:
+      - ./results:/app/results
+   ```
+   **4.1 CLIENTES**:
+   ```python
+name: fl-nodo-cliente
+services:
+  client:
+    build: ./client # (Ruta al Dockerfile del cliente)
+    container_name: fl-client-fisico
+    environment:
+      - CLIENT_ID=1 # Pon 2 en el otro ordenador, 3 en el siguiente...
+      - SERVER_ADDRESS=192.168.1.45:8080 # CAMBIAR POR LA IP_DEL_SERVIDOR
+      - IS_ATTACKER=False 
+      - START_DELAY=0 # Arrancan al instante
+      # Mantenemos las condiciones de red ideales para esta prueba básica
+      - NETWORK_LATENCY=0ms 
+      - NETWORK_LOSS=0%
+      - NETWORK_BANDWIDTH=1gbit
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - ./results:/app/results
+   ```
+**5.  Inicialización**
+
+Levantamos las distintas conexiones, en el terminal ponemos:
+
+   **5.1 Servidor**:
+```bash
+
+docker compose -f docker-compose-server.yml up --build
+```
+
+   **5.2 Cliente**:
+```bash
+docker compose -f docker-compose-client.yml up --build
+```
+
+Observamos que el nombre del archivo del docker-compose se llame igual.
