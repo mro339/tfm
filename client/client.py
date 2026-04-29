@@ -76,6 +76,12 @@ https://interactivechaos.com/es/manual/tutorial-de-deep-learning/el-dataset-mnis
 """
 (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
 
+#Para no acabar con el error de lógica que se iba a cometer, unimos el conjunto de entrenamiento y de test:
+x_all = np.concatenate([x_train, x_test])
+y_all = np.concatenate([y_train, y_test])
+
+
+
 """
 **Ahora tenemos que realizar un proceso de procesamiento de datos:**
 
@@ -95,12 +101,10 @@ https://www.kaggle.com/code/merfarukyce/mnist-cnn-classification
 https://www.kaggle.com/code/sani84/mnist-cnn
 """
 #Normalización
-x_train = x_train / 255.0
-x_test = x_test / 255.0
+x_all = x_all / 255.0
 
 #Redimensionar, añadimos canal del color.
-x_train = x_train.reshape(-1, 28, 28, 1)
-x_test = x_test.reshape(-1, 28, 28, 1)
+x_all = x_all.reshape(-1, 28, 28, 1)
 
 """ 
 **Ralizamos la distribución no-IDD de los datos entre los clientes.**
@@ -205,11 +209,27 @@ DISTRIBUTION_METHOD = "dirichlet"
 DIRICHLET_ALPHA = 0.1 # Cuanto más pequeño, más desbalanceado. 0.1 es muy desbalanceado, 1 es casi balanceado (IID).
 DIRICHLET_BALANCE_QUANTITY = True # Si True, se asegura que ningún cliente tenga demasiados datos (freno para clientes con mucho más datos que otros).
 
-# Aplicar partición a TRAIN
-x_train_c, y_train_c = partition_data(x_train, y_train, client_id, num_clients, method=DISTRIBUTION_METHOD, alpha=DIRICHLET_ALPHA, balance_quantity=DIRICHLET_BALANCE_QUANTITY)
+# Aplicar partición en total
+x_client, y_client = partition_data(
+    x_all, y_all,
+    client_id,
+    num_clients,
+    method=DISTRIBUTION_METHOD,
+    alpha=DIRICHLET_ALPHA,
+    balance_quantity=DIRICHLET_BALANCE_QUANTITY
+)
 
-# Aplicar partición a TEST (Para evaluación realista en dominio local)
-x_test_c, y_test_c = partition_data(x_test, y_test, client_id, num_clients, method=DISTRIBUTION_METHOD, alpha=DIRICHLET_ALPHA)
+#Una vez obtenidos tanto las particiones de cada cliente. hacemos su split local.
+
+from sklearn.model_selection import train_test_split
+
+x_train_c, x_test_c, y_train_c, y_test_c = train_test_split(
+    x_client,
+    y_client,
+    test_size=0.2,
+    random_state=42,
+    shuffle=True
+)
 
 print(f"DATOS ASIGNADOS ({DISTRIBUTION_METHOD}):")
 print(f"   -> Train: {len(x_train_c)} imgs. Etiquetas únicas: {np.unique(y_train_c)}")
